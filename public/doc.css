@@ -3,6 +3,7 @@
 }
 body {
     display: flex;
+    align-items: start;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     padding: 20px;
     margin: 0;
@@ -10,11 +11,8 @@ body {
 }
 
 .other {
-    position: fixed;
-    top: 20px;
-    left: 20px;
     width: 200px;
-    height: 40px;
+    height: 100%;
     background: #125599;
     color: white;
     display: flex;
@@ -28,22 +26,26 @@ body {
     display: none;
 }
 .document-container {
+    position: relative;
+    height: 100%;
     border: 2px solid black;
     padding: 5px;
     width: calc( 100% - 40px );
     max-width: 1200px;
-    max-height: calc( 100% - 40px );
+    max-height: calc( 100% - 15px );
     margin: 0 auto;
     background: rgb(236, 246, 255);
     border-radius: 8px;
     box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-    overflow-x: hidden !important;
+    overflow: hidden;
     transition: all 0.3s ease;
 }
 
 .document-header {
+    position: absolute;
+    top: 0;
     width: calc( 100% - 10px );
-    transform: translateX(-5px) translateY(-5px);
+    transform: translateX(-10px) translateY(-3px);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -72,6 +74,7 @@ body {
 }
 
 .document-content {
+    max-height: calc( 100% - 240px );
     max-width: 1200px;
     margin: 0;
     padding: 15px;
@@ -82,6 +85,8 @@ body {
 }
 
 .document-meta {
+    position: absolute;
+    bottom: 0;
     width: calc( 100% - 38px );
     transform: translateX(-5px) translateY(5px);
     padding: 20px 24px;
@@ -100,9 +105,9 @@ body {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    margin-top: 10px;
+    margin: 5px;
+    margin-top: 45px;
     top: 5px;
-    margin: 10px;
     margin-left: auto;
 }
 
