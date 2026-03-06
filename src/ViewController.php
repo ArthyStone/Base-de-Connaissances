@@ -19,6 +19,10 @@ class ViewController {
         $stmt = Database::prepare($req);
         $stmt->execute();
         $data['documents'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach($data['documents'] as &$document) {
+            $document['created'] = date('d/m/Y H:i', strtotime($document['created']));
+            $document['modified'] = date('d/m/Y H:i', strtotime($document['modified']));
+        }
         $stmt = Database::prepare("SELECT tag_id, text FROM kb.tags");
         $stmt->execute();
         $data['tags'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
