@@ -37,8 +37,30 @@
             <button id="saveButton"><i class="fa-solid fa-floppy-disk"></i></button>
             <button id="toggleButton"><i class="fa-solid fa-pen-to-square"></i></button>
         </div>
+        <div class="markdown-toolbar disabled" id="markdownToolbar">
+            <button type="button" data-format="bold" title="Gras (Ctrl+B)"><i class="fa-solid fa-bold"></i></button>
+            <button type="button" data-format="italic" title="Italique (Ctrl+I)"><i class="fa-solid fa-italic"></i></button>
+            <button type="button" data-format="underline" title="Souligné (Ctrl+U)"><i class="fa-solid fa-underline"></i></button>
+            <button type="button" data-format="strike" title="Barré"><i class="fa-solid fa-strikethrough"></i></button>
+            <div class="toolbar-separator"></div>
+            <button type="button" data-format="h1" title="Titre H1"><i class="fa-solid fa-heading"></i> 1</button>
+            <button type="button" data-format="h2" title="Titre H2"><i class="fa-solid fa-heading"></i> 2</button>
+            <button type="button" data-format="h3" title="Titre H3"><i class="fa-solid fa-heading"></i> 3</button>
+            <div class="toolbar-separator"></div>
+            <button type="button" data-format="ul" title="Liste à puces"><i class="fa-solid fa-list-ul"></i></button>
+            <button type="button" data-format="ol" title="Liste numérotée"><i class="fa-solid fa-list-ol"></i></button>
+            <div class="toolbar-separator"></div>
+            <button type="button" data-format="code" title="Code en ligne"><i class="fa-solid fa-terminal"></i></button>
+            <button type="button" data-format="codeblock" title="Bloc de code"><i class="fa-solid fa-code"></i></button>
+            <div class="toolbar-separator"></div>
+            <button type="button" data-format="blockquote" title="Citation"><i class="fa-solid fa-quote-left"></i></button>
+            <button type="button" data-format="link" title="Lien (Ctrl+K)"><i class="fa-solid fa-link"></i></button>
+            <button type="button" data-format="image" title="Image"><i class="fa-solid fa-image"></i></button>
+            <div class="toolbar-separator"></div>
+            <button type="button" data-format="hr" title="Séparation"><i class="fa-solid fa-minus"></i></button>
+        </div>
         <div class="document-content">
-            <textarea id="editor" class="disabled"><?= $document['text'] ?? '' ?></textarea>
+            <textarea id="editor" class="disabled" spellcheck="false" autocorrect="off" autocapitalize="off"><?= $document['text'] ?? '' ?></textarea>
             <div id="preview"></div>
         </div>
         <div class="document-meta">
@@ -52,6 +74,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
 <script src="scripts/markdown&highlight.js"></script>
+<script src="scripts/toolbar.js"></script>
 <script>
 
 const body = document.querySelector("body");
@@ -63,6 +86,8 @@ const tagsShow = document.querySelector(".document-header .tags");
 const tagsSelect = document.getElementById("tagsSelect");
 const toggleButton = document.getElementById("toggleButton");
 const saveButton = document.getElementById("saveButton");
+const markdownToolbar = document.getElementById("markdownToolbar");
+
 
 // Fonction pour auto-ajuster la hauteur du textarea
 function autoResizeEditor() {
@@ -96,6 +121,9 @@ editor.addEventListener("input", () => {
 editor.addEventListener("focus", autoResizeEditor);
 
 toggleButton.addEventListener("click", () => {
+    setTimeout(() => {
+        autoResizeEditor();
+    }, 50);
     const isEditing = !editor.classList.contains("disabled");
     editor.classList.toggle("disabled");
     preview.classList.toggle("disabled")
@@ -103,6 +131,7 @@ toggleButton.addEventListener("click", () => {
     titleShow.classList.toggle("disabled");
     titleInput.classList.toggle("disabled");
     tagsSelect.classList.toggle("disabled");
+    markdownToolbar.classList.toggle("disabled");
     toggleButton.innerHTML = isEditing ? '<i class="fa-solid fa-pen-to-square"></i>' : '<i class="fa-solid fa-eye"></i>';
     autoResizeEditor();
 });
@@ -115,6 +144,7 @@ document.querySelectorAll("#tagsSelect input[type='checkbox']").forEach(checkbox
         tagsShow.innerHTML = selectedTags.map(tag => `<span>${tag}</span>`).join('');
     });
 });
+
 saveButton.addEventListener("click", () => {
     const content = editor.value;
     const documentId = <?= json_encode($data['documentId'] ?? null) ?>;
@@ -142,6 +172,7 @@ saveButton.addEventListener("click", () => {
                 titleShow.classList.toggle("disabled");
                 titleInput.classList.toggle("disabled");
                 tagsSelect.classList.toggle("disabled");
+                markdownToolbar.classList.toggle("disabled");
                 toggleButton.textContent = "Éditer";
                 autoResizeEditor();
             }
@@ -159,5 +190,6 @@ saveButton.addEventListener("click", () => {
         alert("Erreur lors de l'enregistrement du document.");
     });
 });
+
 </script>
 </html>

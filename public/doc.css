@@ -140,8 +140,50 @@ form span {
     gap: 10px;
     margin: 5px;
     margin-top: 45px;
+    padding: 5px 10px;
     top: 5px;
     margin-left: auto;
+}
+
+.markdown-toolbar {
+    position: absolute;
+    top: 50px;
+    left: 5px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 5px 10px;
+    background: #e0e0ff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin: 5px;
+    margin-top: 0;
+}
+
+.markdown-toolbar button {
+    padding: 6px 10px;
+    background-color: rgb(87, 118, 255);
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.markdown-toolbar button:hover {
+    background-color: rgb(124, 148, 255);
+    border-color: #999;
+    box-shadow: none;
+}
+
+.markdown-toolbar button:active {
+    background-color: #d0d0d0;
+}
+
+.toolbar-separator {
+    width: 1px;
+    background-color: #ccc;
+    margin: 0 4px;
 }
 
 button {
