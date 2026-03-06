@@ -23,7 +23,7 @@ body {
 }
 
 .disabled {
-    display: none;
+    display: none !important;
 }
 .document-container {
     position: relative;
@@ -59,18 +59,37 @@ body {
     background-color: #b2b1fa;
 }
 
-.document-header span:first-child {
+.document-header #titleShow,
+.document-header #titleInput {
     font-size: 28px;
     font-weight: 700;
     color: #1a1a1a;
 }
-
-.document-header span:last-child {
+.document-header .tags {
+    display: flex;
+    gap: 6px;
     color: #666;
     font-size: 14px;
     background: #f0f0f0;
     padding: 6px 12px;
     border-radius: 4px;
+}
+.document-header .tags span {
+    background: #d0d0d0;
+    padding: 2px 8px;
+    border-radius: 3px;
+}
+form {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin: 0;
+}
+form span {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
 }
 
 .document-content {

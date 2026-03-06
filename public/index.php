@@ -26,10 +26,17 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         case '/document/edit':
                 $input = json_decode(file_get_contents('php://input'), true);
                 $documentId = $input['documentId'] ?? null;
+                $title = $input['title'] ?? null;
                 $text = $input['text'] ?? null;
+                $tags = $input['tags'] ?? null;
                 if(!$documentId) {
                     http_response_code(400);
                     echo "ID du document manquant.";
+                    exit;
+                }
+                if(!$title) {
+                    http_response_code(400);
+                    echo "Titre du document manquant.";
                     exit;
                 }
                 if(!$text) {
@@ -38,7 +45,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                     exit;
                 }
                 $documentController = new DocumentController();
-                if($documentController->editDocument((int)$documentId, $text)) {
+                if($documentController->editDocument((int)$documentId, $text, $title, $tags)) {
                     echo "Document mis à jour avec succès.";
                 } else {
                     http_response_code(500);

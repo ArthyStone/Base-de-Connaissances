@@ -19,6 +19,9 @@ class ViewController {
         $stmt = Database::prepare($req);
         $stmt->execute();
         $data['documents'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = Database::prepare("SELECT tag_id, text FROM kb.tags");
+        $stmt->execute();
+        $data['tags'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
         extract($data);
         include __DIR__ . '/../views/' . $view . '.php';
     }

@@ -16,8 +16,21 @@
     </div>
     <div class="document-container">
         <div class="document-header">
-            <span><?= htmlspecialchars($document['title'] ?? 'Document Inconnu') ?></span>
-            <span><?= htmlspecialchars($document['tags'] ?? 'Aucun tag') ?></span>
+            <input type="text" id="titleInput" class="disabled" value="<?= htmlspecialchars($document['title'] ?? 'Document Inconnu') ?>">
+            <span id="titleShow"><?= htmlspecialchars($document['title'] ?? 'Document Inconnu') ?></span>
+            <span class="tags">
+                <?php foreach(explode(',', $document['tags'] ?? 'Aucun tag') as $tag): ?>
+                    <span><?= htmlspecialchars($tag) ?></span>
+                <?php endforeach; ?>
+            </span>
+            <form id="tagsSelect" class="disabled">
+                <?php foreach($tags as $tag): ?>
+                    <span>
+                        <input type="checkbox" value="<?= $tag['tag_id'] ?>" id="tag_<?= $tag['tag_id'] ?>" <?= in_array($tag['text'], explode(',', $document['tags'] ?? '')) ? 'checked' : '' ?>>
+                        <label for="tag_<?= $tag['tag_id'] ?>"><?= htmlspecialchars($tag['text']) ?></label>
+                    </span>
+                <?php endforeach; ?>
+            </form>
         </div>
         <div class="buttons-container">
             <button id="saveButton"><i class="fa-solid fa-floppy-disk"></i></button>
@@ -43,6 +56,10 @@
 const body = document.querySelector("body");
 const editor = document.getElementById("editor");
 const preview = document.getElementById("preview");
+const titleShow = document.getElementById("titleShow");
+const titleInput = document.getElementById("titleInput");
+const tagsShow = document.querySelector(".document-header .tags");
+const tagsSelect = document.getElementById("tagsSelect");
 const toggleButton = document.getElementById("toggleButton");
 const saveButton = document.getElementById("saveButton");
 
@@ -69,7 +86,7 @@ renderPreview();
 // Ajuster la hauteur initiale après un petit délai
 setTimeout(() => {
     autoResizeEditor();
-}, 50);
+}, 100);
 
 editor.addEventListener("input", () => {
     renderPreview();
@@ -80,13 +97,27 @@ editor.addEventListener("focus", autoResizeEditor);
 toggleButton.addEventListener("click", () => {
     const isEditing = !editor.classList.contains("disabled");
     editor.classList.toggle("disabled");
-    preview.classList.toggle("disabled");
+    preview.classList.toggle("disabled")
+    tagsShow.classList.toggle("disabled");
+    titleShow.classList.toggle("disabled");
+    titleInput.classList.toggle("disabled");
+    tagsSelect.classList.toggle("disabled");
     toggleButton.innerHTML = isEditing ? '<i class="fa-solid fa-pen-to-square"></i>' : '<i class="fa-solid fa-eye"></i>';
     autoResizeEditor();
+});
+titleInput.addEventListener("input", () => {
+    titleShow.textContent = titleInput.value;
+});
+document.querySelectorAll("#tagsSelect input[type='checkbox']").forEach(checkbox => {
+    checkbox.addEventListener("change", () => {
+        const selectedTags = Array.from(tagsSelect.querySelectorAll("input[type='checkbox']:checked")).map(cb => cb.nextElementSibling.textContent);
+        tagsShow.innerHTML = selectedTags.map(tag => `<span>${tag}</span>`).join('');
+    });
 });
 saveButton.addEventListener("click", () => {
     const content = editor.value;
     const documentId = <?= json_encode($data['documentId'] ?? null) ?>;
+    const tags = Array.from(tagsSelect.querySelectorAll("input[type='checkbox']:checked")).map(checkbox => parseInt(checkbox.value));
     
     if (!documentId) {
         alert("ID du document manquant.");
@@ -98,14 +129,18 @@ saveButton.addEventListener("click", () => {
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ text: content, documentId })
+        body: JSON.stringify({ text: content, documentId, title: titleInput.value, tags })
     })
     .then(response => {
         console.log(response);
         if (response.ok) {
             if(preview.classList.contains("disabled")) {
                 editor.classList.toggle("disabled");
-                preview.classList.toggle("disabled");
+                preview.classList.toggle("disabled")
+                tagsShow.classList.toggle("disabled");
+                titleShow.classList.toggle("disabled");
+                titleInput.classList.toggle("disabled");
+                tagsSelect.classList.toggle("disabled");
                 toggleButton.textContent = "Éditer";
                 autoResizeEditor();
             }
