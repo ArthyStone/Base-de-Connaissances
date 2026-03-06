@@ -19,9 +19,10 @@ class ViewController {
         $stmt = Database::prepare($req);
         $stmt->execute();
         $data['documents'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        foreach($data['documents'] as &$document) {
+        foreach($data['documents'] as &$document) { // & pour modifier directement les éléments du tableau, au lieu de créer des variables copies
             $document['created'] = date('d/m/Y H:i', strtotime($document['created']));
             $document['modified'] = date('d/m/Y H:i', strtotime($document['modified']));
+            unset($document); // visiblement, sans unset, des documents en remplacent d'autres.
         }
         $stmt = Database::prepare("SELECT tag_id, text FROM kb.tags");
         $stmt->execute();
