@@ -13,6 +13,7 @@
     }
     ?>
     <div class="other">
+        <a href="/" class="back-button"><i class="fa-solid fa-arrow-left"></i> Retour à la liste</a>
     </div>
     <div class="document-container">
         <div class="document-header">
