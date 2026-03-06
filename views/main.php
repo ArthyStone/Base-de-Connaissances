@@ -28,7 +28,7 @@ if(isset($documents) && is_array($documents) && count($documents) > 0){
         echo "<tr>";
         echo "<td>" . $document['article_id'] . "</td>";
         echo "<td><a href='document?id=" . $document['article_id'] . "'>" . htmlspecialchars($document['title']) . "</a></td>";
-        echo "<td>" . htmlspecialchars($document['tags']) . "</td>";
+        echo "<td>" . htmlspecialchars($document['tags'] ?? 'Aucun tag') . "</td>";
         echo "<td>" . $document['creator'] . "</td>";
         echo "<td>" . htmlspecialchars($document['created']) . "</td>";
         echo "<td>" . htmlspecialchars($document['modified']) . "</td>";
