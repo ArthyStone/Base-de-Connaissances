@@ -24,14 +24,14 @@
                     <span><?= htmlspecialchars($tag) ?></span>
                 <?php endforeach; ?>
             </span>
-            <form id="tagsSelect" class="disabled">
+            <div id="tagsSelect" class="disabled">
                 <?php foreach($tags as $tag): ?>
                     <span>
                         <input type="checkbox" value="<?= $tag['tag_id'] ?>" id="tag_<?= $tag['tag_id'] ?>" <?= in_array($tag['text'], explode(',', $document['tags'] ?? '')) ? 'checked' : '' ?>>
                         <label for="tag_<?= $tag['tag_id'] ?>"><?= htmlspecialchars($tag['text']) ?></label>
                     </span>
                 <?php endforeach; ?>
-            </form>
+            </div>
         </div>
         <div class="buttons-container">
             <button id="saveButton"><i class="fa-solid fa-floppy-disk"></i></button>
