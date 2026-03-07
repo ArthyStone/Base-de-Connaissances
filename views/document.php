@@ -277,7 +277,9 @@ function importKnowledge() {
 
 function download() {
     const fileName = titleInput.value + '.md';
-    const fileContent = editor.value;
+    const tags = Array.from(tagsSelect.querySelectorAll("input[type='checkbox']:checked")).map(cb => cb.nextElementSibling.textContent);
+    const metadata = `---\nMETA\ntitle: ${titleInput.value}\ntags: [${tags.map(t => `"${t}"`).join(', ')}]\n---\n\n`;
+    const fileContent = metadata + editor.value;
     const blob = new Blob([fileContent], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -313,11 +315,45 @@ function handleFile(e) {
     const reader = new FileReader();
     
     reader.onload = (event) => {
-        const fileName = files[0].name.replace('.txt', '').replace('.md', '');
-        const fileText = event.target.result;
-        titleShow.textContent = fileName;
-        titleInput.value = fileName;
+        let fileText = event.target.result;
+        let title = files[0].name.replace('.txt', '').replace('.md', '');
+        let tags = [];
+        
+        // Vérifier s'il y a un frontmatter YAML
+        if (fileText.startsWith('---')) {
+            const frontmatterMatch = fileText.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+            if (frontmatterMatch) {
+                const frontmatter = frontmatterMatch[1];
+                fileText = frontmatterMatch[2]; // contenu sans le frontmatter
+                
+                // Parser le titre
+                const titleMatch = frontmatter.match(/title:\s*(.+)/);
+                if (titleMatch) {
+                    title = titleMatch[1].trim();
+                }
+                
+                // Parser les tags
+                const tagsMatch = frontmatter.match(/tags:\s*\[(.*?)\]/);
+                if (tagsMatch) {
+                    tags = tagsMatch[1].split(',').map(tag => tag.trim().replace(/"/g, '').replace(/'/g, ''));
+                }
+            }
+        }
+        
+        titleShow.textContent = title;
+        titleInput.value = title;
         editor.value = fileText;
+        
+        // Cocher les checkboxes correspondant aux tags importés
+        document.querySelectorAll("#tagsSelect input[type='checkbox']").forEach(checkbox => {
+            const labelText = checkbox.nextElementSibling.textContent.trim();
+            checkbox.checked = tags.includes(labelText);
+        });
+        
+        // Mettre à jour l'affichage des tags
+        const selectedTags = Array.from(tagsSelect.querySelectorAll("input[type='checkbox']:checked")).map(cb => cb.nextElementSibling.textContent);
+        tagsShow.innerHTML = selectedTags[0] ? selectedTags.map(tag => `<span>${tag}</span>`).join('') : "Aucun tag";
+        
         renderPreview();
         autoResizeEditor();
         documentContent.classList.remove('disabled');
