@@ -2,8 +2,8 @@
 declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use Src\Database;
 use Src\ViewController;
-use Src\DocumentController;
 
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 if($_SERVER['REQUEST_METHOD'] === 'GET'){
@@ -15,6 +15,10 @@ if($_SERVER['REQUEST_METHOD'] === 'GET'){
         case '/document':
             $viewController = new ViewController();
             $viewController->render('document', ['documentId' => $_GET['id'] ?? null]);
+            break;
+        case '/create':
+            $viewController = new ViewController();
+            $viewController->render('document', ['documentId' => null]);
             break;
         default:
             http_response_code(404);
@@ -44,8 +48,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                     echo "Contenu du document manquant.";
                     exit;
                 }
-                $documentController = new DocumentController();
-                if($documentController->editDocument((int)$documentId, $text, $title, $tags)) {
+                if(Database::editDocument((int)$documentId, $text, $title, $tags)) {
                     echo "Document mis à jour avec succès.";
                 } else {
                     http_response_code(500);
