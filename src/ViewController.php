@@ -5,7 +5,7 @@ namespace Src;
 use Src\Database;
 use PDO;
 class ViewController {
-    public function render($view, $data = []) {
+    public static function render($view, $data = []) {
         switch($view) {
             case 'main':
                 $data['documents'] = Database::listArticles();

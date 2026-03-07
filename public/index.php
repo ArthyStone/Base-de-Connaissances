@@ -9,16 +9,13 @@ $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 if($_SERVER['REQUEST_METHOD'] === 'GET'){
     switch ($path) {
         case '/':
-            $viewController = new ViewController();
-            $viewController->render('main', ['data' => []]);
+            ViewController::render('main', ['data' => []]);
             break;
         case '/document':
-            $viewController = new ViewController();
-            $viewController->render('document', ['documentId' => $_GET['id'] ?? null]);
+            ViewController::render('document', ['documentId' => $_GET['id'] ?? null]);
             break;
         case '/create':
-            $viewController = new ViewController();
-            $viewController->render('document', ['documentId' => null]);
+            ViewController::render('document', ['documentId' => null]);
             break;
         default:
             http_response_code(404);
