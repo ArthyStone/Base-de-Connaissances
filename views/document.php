@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Base de Connaissances</title>
-    <link rel="stylesheet" href="doc.css">
+    <link rel="stylesheet" href="styles/doc.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -12,8 +12,8 @@
     </div>
     <div class="document-container">
         <div class="document-header">
-            <input type="text" id="titleInput" class="disabled" value="<?= htmlspecialchars($document['title'] ?? 'Document Inconnu') ?>">
-            <span id="titleShow"><?= htmlspecialchars($document['title'] ?? 'Document Inconnu') ?></span>
+            <input type="text" id="titleInput" class="disabled" value="<?= htmlspecialchars($document['title'] ?? 'Nouveau document') ?>">
+            <span id="titleShow"><?= htmlspecialchars($document['title'] ?? 'Nouveau document') ?></span>
             <span class="tags">
                 <?php foreach(explode(',', $document['tags'] ?? 'Aucun tag') as $tag): ?>
                     <span><?= htmlspecialchars($tag) ?></span>
@@ -29,6 +29,7 @@
             </div>
         </div>
         <div class="buttons-container">
+            <button id="deleteButton"><i class="fa-solid fa-trash-can"></i></button>
             <button id="saveButton"><i class="fa-solid fa-floppy-disk"></i></button>
             <button id="toggleButton"><i class="fa-solid fa-pen-to-square"></i></button>
         </div>
@@ -55,13 +56,13 @@
             <button type="button" data-format="hr" title="Séparation"><i class="fa-solid fa-minus"></i></button>
         </div>
         <div class="document-content">
-            <textarea id="editor" class="disabled" spellcheck="false" autocorrect="off" autocapitalize="off"><?= $document['text'] ?? '' ?></textarea>
+            <textarea id="editor" class="disabled" spellcheck="false" autocorrect="off" autocapitalize="off"><?= $document['text'] ?? '# Nouveau document' ?></textarea>
             <div id="preview"></div>
         </div>
         <div class="document-meta">
-            <p><strong>Créateur:</strong> <?= $document['creator'] ?? 'Inconnu' ?></p>
-            <p><strong>Créé le:</strong> <?= htmlspecialchars($document['created'] ?? 'Inconnu') ?></p>
-            <p><strong>Modifié le:</strong> <?= htmlspecialchars($document['modified'] ?? 'Inconnu') ?></p>
+            <p><strong>Créateur:</strong> <?= $document['creator'] ?? $Session['user_name'] ?? 'Inconnu' ?></p>
+            <p><strong>Créé:</strong> <?= htmlspecialchars($document['created'] ?? 'Maintenant') ?></p>
+            <p><strong>Modifié:</strong> <?= htmlspecialchars($document['modified'] ?? 'Maintenant') ?></p>
         </div>
     </div>
 </body>
@@ -77,12 +78,13 @@ const editor = document.getElementById("editor");
 const preview = document.getElementById("preview");
 const titleShow = document.getElementById("titleShow");
 const titleInput = document.getElementById("titleInput");
-const tagsShow = document.querySelector(".document-header .tags");
 const tagsSelect = document.getElementById("tagsSelect");
-const toggleButton = document.getElementById("toggleButton");
 const saveButton = document.getElementById("saveButton");
+const deleteButton = document.getElementById("deleteButton");
+const toggleButton = document.getElementById("toggleButton");
+const tagsShow = document.querySelector(".document-header .tags");
 const markdownToolbar = document.getElementById("markdownToolbar");
-
+let didEditorChange = false;
 
 // Fonction pour auto-ajuster la hauteur du textarea
 function autoResizeEditor() {
@@ -110,6 +112,7 @@ setTimeout(() => {
 }, 100);
 
 editor.addEventListener("input", () => {
+    didEditorChange = true;
     renderPreview();
     autoResizeEditor();
 });
@@ -142,15 +145,11 @@ document.querySelectorAll("#tagsSelect input[type='checkbox']").forEach(checkbox
 
 saveButton.addEventListener("click", () => {
     const content = editor.value;
-    const documentId = <?= json_encode($data['documentId'] ?? null) ?>;
+    const documentId = <?= json_encode($documentId ?? null) ?>;
     const tags = Array.from(tagsSelect.querySelectorAll("input[type='checkbox']:checked")).map(checkbox => parseInt(checkbox.value));
     
-    if (!documentId) {
-        alert("ID du document manquant.");
-        return;
-    }
-    
-    fetch(`document/edit`, {
+    <?php if ($documentId): ?>
+    fetch("document/edit", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -180,10 +179,74 @@ saveButton.addEventListener("click", () => {
             alert("Erreur lors de l'enregistrement du document.");
         }
     })
+    <?php else: ?>
+    fetch("document/create", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ user_id: <?= $Session['user_id'] ?>,text: content, title: titleInput.value, tags })
+    })
+    .then(response => {
+        if(response.ok) {
+            console.log(response);
+            return response.json();
+        } else {
+            throw new Error("Erreur lors de la création du document.");
+        }
+    }).then(data => {
+        if(data && data.documentId) {
+            didEditorChange = false;
+            window.location.href = `/document?id=${data.documentId}`;
+        } else {
+            throw new Error("ID du document créé manquant dans la réponse.");
+        }
+    })
+    <?php endif; ?>
     .catch(error => {
         console.error("Erreur:", error);
         alert("Erreur lors de l'enregistrement du document.");
     });
+});
+
+deleteButton.addEventListener("click", () => {
+    if(!confirm('Es-tu sûr de vouloir supprimer ce document ?\n(Cette action est irréversible)')) return;
+    <?php if ($documentId): ?>
+    const documentId = <?= json_encode($documentId ?? null) ?>;
+    const tags = Array.from(tagsSelect.querySelectorAll("input[type='checkbox']:checked")).map(checkbox => parseInt(checkbox.value));
+    fetch("document/delete", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ documentId })
+    })
+    .then(response => {
+        console.log(response);
+        if (response.ok) {
+            didEditorChange = false;
+            window.location.href = `/`;
+            
+        } else {
+            alert("Erreur lors de la suppression du document.");
+        }
+    })
+    .catch(error => {
+        console.error("Erreur:", error);
+        alert("Erreur lors de l'enregistrement du document.");
+    });
+    <?php else: ?>
+    didEditorChange = false;
+    window.location.href = `/`;
+    <?php endif; ?>
+});
+
+window.addEventListener('beforeunload', (event) => {
+  if (didEditorChange) {
+    event.preventDefault();
+    // Pour les anciens navigateurs
+    event.returnValue = '';
+  }
 });
 
 </script>

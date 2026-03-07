@@ -24,9 +24,21 @@ class Database {
     private static function normalizeDate($date) {
         return date('d/m/Y H:i', strtotime($date));
     }
+    
+    public static function hasPasswordField() {
+        $stmt = self::prepare("SELECT column_name FROM information_schema.columns WHERE table_name='users' AND column_name='password'");
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC) !== false;
+    }
+
 
     public static function listTags() {
         $stmt = self::prepare("SELECT tag_id, text FROM kb.tags");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    public static function listUsers() {
+        $stmt = self::prepare("SELECT user_id, user_name FROM kb.users");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -42,6 +54,7 @@ class Database {
         return $articles;
     }
     public static function getArticle($id) {
+        if(!$id) return null;
         $stmt = self::prepare("SELECT a.title, a.created, a.modified, a.text, string_agg(t.text, ',') AS tags, u.user_name AS creator FROM kb.articles a LEFT JOIN kb.tag_links tl ON a.article_id = tl.article_id LEFT JOIN kb.tags t ON tl.tag_id = t.tag_id LEFT JOIN kb.users u ON a.user_id = u.user_id WHERE a.article_id = :id GROUP BY a.article_id, a.title, a.created, a.modified, a.text, u.user_name;");
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
@@ -52,24 +65,93 @@ class Database {
         }
         return $article;
     }
+    public static function getUser($id) {
+        if(!$id) return null;
+        $stmt = self::prepare("SELECT user_name FROM kb.users WHERE user_id = :id;");
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $user['user_name'];
+    }
 
     
     public static function editDocument($id, $text, $title, $tags) {
-        $req = "UPDATE kb.articles SET text = :text, title = :title, modified = NOW() WHERE article_id = :id";
-        $stmt = Database::prepare($req);
-        $stmt->bindParam(':title', $title, PDO::PARAM_STR);
-        $stmt->bindParam(':text', $text, PDO::PARAM_STR);
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
-        $stmt = Database::prepare("DELETE FROM kb.tag_links WHERE article_id = :id");
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
-        foreach($tags as $tagId) {
-            $stmt = Database::prepare("INSERT INTO kb.tag_links (article_id, tag_id) VALUES (:article_id, :tag_id)");
-            $stmt->bindParam(':article_id', $id, PDO::PARAM_INT);
-            $stmt->bindParam(':tag_id', $tagId, PDO::PARAM_INT);
+        $db = self::getConnection();
+        try {
+            $db->beginTransaction();
+            $req = "UPDATE kb.articles SET text = :text, title = :title, modified = NOW() WHERE article_id = :id";
+            $stmt = Database::prepare($req);
+            $stmt->bindParam(':title', $title, PDO::PARAM_STR);
+            $stmt->bindParam(':text', $text, PDO::PARAM_STR);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
             $stmt->execute();
+            $stmt = Database::prepare("DELETE FROM kb.tag_links WHERE article_id = :id");
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
+            foreach($tags as $tagId) {
+                $stmt = Database::prepare("INSERT INTO kb.tag_links (article_id, tag_id) VALUES (:article_id, :tag_id)");
+                $stmt->bindParam(':article_id', $id, PDO::PARAM_INT);
+                $stmt->bindParam(':tag_id', $tagId, PDO::PARAM_INT);
+                $stmt->execute();
+            }
+            return true;
+            $db->commit();
+        } catch (\PDOException $e) {
+            $db->rollBack();
+            throw $e;
+            return false;
+        }
+    }
+    public static function createDocument($user_id, $text, $title, $tags) {
+        $db = self::getConnection();
+        try {
+            $db->beginTransaction();
+            $req = "INSERT INTO kb.articles (user_id, text, title)
+                    VALUES (:user_id, :text, :title)
+                    RETURNING article_id;";
+            $stmt = Database::prepare($req);
+            $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+            $stmt->bindParam(':text', $text, PDO::PARAM_STR);
+            $stmt->bindParam(':title', $title, PDO::PARAM_STR);
+            $stmt->execute();
+            $article_id = $stmt->fetchColumn();
+            
+            foreach($tags as $tagId) {
+                $stmt = Database::prepare("INSERT INTO kb.tag_links (article_id, tag_id) VALUES (:article_id, :tag_id)");
+                $stmt->bindParam(':article_id', $article_id, PDO::PARAM_INT);
+                $stmt->bindParam(':tag_id', $tagId, PDO::PARAM_INT);
+                $stmt->execute();
+            }
+            $db->commit();
+        } catch (\PDOException $e) {
+            $db->rollBack();
+            throw $e;
+            return false;
+        }
+        return $article_id;
+    }
+    public static function deleteDocument($article_id) {
+        $db = self::getConnection();
+        try {
+            $db->beginTransaction();
+            $req = "DELETE FROM kb.tag_links
+                    WHERE article_id = :article_id;";
+            $stmt = Database::prepare($req);
+            $stmt->bindParam(':article_id', $article_id, PDO::PARAM_INT);
+            $stmt->execute();
+            
+            $req = "DELETE FROM kb.articles
+                    WHERE article_id = :article_id;";
+            $stmt = Database::prepare($req);
+            $stmt->bindParam(':article_id', $article_id, PDO::PARAM_INT);
+            $stmt->execute();
+            $db->commit();
+        } catch (\PDOException $e) {
+            $db->rollBack();
+            throw $e;
+            return false;
         }
         return true;
     }
+
 }
