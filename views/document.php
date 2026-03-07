@@ -29,8 +29,10 @@
             </div>
         </div>
         <div class="buttons-container">
-            <button id="deleteButton"><i class="fa-solid fa-trash-can"></i></button>
-            <button id="saveButton"><i class="fa-solid fa-floppy-disk"></i></button>
+            <button id="importButton" title="Importer une connaissance" onclick="importKnowledge();"><i class="fa-solid fa-file-import"></i></button>
+            <button id="downloadButton" title="Télécharger cette connaissance"><i class="fa-solid fa-download"></i></button>
+            <button id="deleteButton" title="Supprimer cette connaissance"><i class="fa-solid fa-trash-can"></i></button>
+            <button id="saveButton" title="Sauvegarder cette connaissance"><i class="fa-solid fa-floppy-disk"></i></button>
             <button id="toggleButton"><i class="fa-solid fa-pen-to-square"></i></button>
         </div>
         <div class="markdown-toolbar disabled" id="markdownToolbar">
@@ -59,6 +61,10 @@
             <textarea id="editor" class="disabled" spellcheck="false" autocorrect="off" autocapitalize="off"><?= $document['text'] ?? '# Nouveau document' ?></textarea>
             <div id="preview"></div>
         </div>
+        <div class="import-zone disabled">
+            <div id="dropZone">Glissez-déposez vos fichiers ici</div>
+            <input type="file" id="fileInput" accept=".md,.txt" style="display: none;">
+        </div>
         <div class="document-meta">
             <p><strong>Créateur:</strong> <?= $document['creator'] ?? $Session['user_name'] ?? 'Inconnu' ?></p>
             <p><strong>Créé:</strong> <?= htmlspecialchars($document['created'] ?? 'Maintenant') ?></p>
@@ -76,14 +82,18 @@
 const body = document.querySelector("body");
 const editor = document.getElementById("editor");
 const preview = document.getElementById("preview");
+const dropZone = document.getElementById("dropZone");
 const titleShow = document.getElementById("titleShow");
+const fileInput = document.getElementById("fileInput");
 const titleInput = document.getElementById("titleInput");
 const tagsSelect = document.getElementById("tagsSelect");
 const saveButton = document.getElementById("saveButton");
+const importZone = document.querySelector(".import-zone");
 const deleteButton = document.getElementById("deleteButton");
 const toggleButton = document.getElementById("toggleButton");
 const tagsShow = document.querySelector(".document-header .tags");
 const markdownToolbar = document.getElementById("markdownToolbar");
+const documentContent = document.querySelector(".document-content");
 let didEditorChange = false;
 
 // Fonction pour auto-ajuster la hauteur du textarea
@@ -249,5 +259,73 @@ window.addEventListener('beforeunload', (event) => {
   }
 });
 
+function importKnowledge() {
+    documentContent.classList.toggle('disabled');
+    importZone.classList.toggle('disabled');
+    if(preview.classList.contains("disabled")) {
+        editor.classList.toggle("disabled");
+        preview.classList.toggle("disabled")
+        tagsShow.classList.toggle("disabled");
+        titleShow.classList.toggle("disabled");
+        titleInput.classList.toggle("disabled");
+        tagsSelect.classList.toggle("disabled");
+        markdownToolbar.classList.toggle("disabled");
+        toggleButton.textContent = "Éditer";
+        autoResizeEditor();
+    }
+}
+
+function download() {
+    const fileName = titleInput.value + '.md';
+    const fileContent = editor.value;
+    const blob = new Blob([fileContent], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+downloadButton.addEventListener('click', download);
+
+dropZone.addEventListener('click', () => fileInput.click());
+
+dropZone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropZone.classList.add('draggedOver');
+});
+dropZone.addEventListener('dragleave', e => {
+    e.preventDefault();
+    dropZone.classList.remove('draggedOver');
+});
+function handleFile(e) {
+    e.preventDefault();
+    dropZone.classList.remove('draggedOver');
+    dropZone.style.border = '2px dashed #aaa';
+    console.log(e);
+    const files = e.type === 'drop' ? Array.from(e.dataTransfer.files) : Array.from(fileInput.files);
+    if (files.length === 0) return;
+    console.log(files[0]);
+    const file = files[0];
+    const reader = new FileReader();
+    
+    reader.onload = (event) => {
+        const fileName = files[0].name.replace('.txt', '').replace('.md', '');
+        const fileText = event.target.result;
+        titleShow.textContent = fileName;
+        titleInput.value = fileName;
+        editor.value = fileText;
+        renderPreview();
+        autoResizeEditor();
+        documentContent.classList.remove('disabled');
+        importZone.classList.add('disabled');
+    };
+    reader.readAsText(file);
+}
+dropZone.addEventListener('drop', e => handleFile(e));
+fileInput.addEventListener('change', e => handleFile(e));
 </script>
 </html>
