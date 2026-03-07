@@ -7,11 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <?php
-    if(isset($documents)) {
-        $document = $documents[0];
-    }
-    ?>
     <div class="other">
         <a href="/" class="back-button"><i class="fa-solid fa-arrow-left"></i> Retour à la liste</a>
     </div>
