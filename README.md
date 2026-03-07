@@ -4,7 +4,7 @@ pour le moment il n'y a que la fonction d'édition de fiches préexistantes.
 
 
 - Tables :
-
+```SQL
 CREATE TABLE kb.users (
     user_id serial NOT NULL,
     user_name character varying(50) NOT NULL,
@@ -50,5 +50,6 @@ CREATE TABLE kb.tag_links (
         ON DELETE RESTRICT
         NOT VALID
 );
+```
 
 
