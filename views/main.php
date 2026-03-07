@@ -20,6 +20,14 @@
                 </tr>
             </thead>
             <tbody>
+        <tr>
+            <td>0</td>
+            <td><a href='create'>Créer un document</a></td>
+            <td>Aucun tag</td>
+            <td>Personne</td>
+            <td>Jamais</td>
+            <td>Jamais</td>
+        </tr>
 <?php
 // aura besoin de données de la base de données
 // il recevra une grande liste de documents et les affichera
