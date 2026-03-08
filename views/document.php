@@ -167,7 +167,6 @@ saveButton.addEventListener("click", () => {
         body: JSON.stringify({ text: content, documentId, title: titleInput.value, tags })
     })
     .then(response => {
-        console.log(response);
         if (response.ok) {
             if(preview.classList.contains("disabled")) {
                 editor.classList.toggle("disabled");
@@ -199,7 +198,6 @@ saveButton.addEventListener("click", () => {
     })
     .then(response => {
         if(response.ok) {
-            console.log(response);
             return response.json();
         } else {
             throw new Error("Erreur lors de la création du document.");
@@ -232,7 +230,6 @@ deleteButton.addEventListener("click", () => {
         body: JSON.stringify({ documentId })
     })
     .then(response => {
-        console.log(response);
         if (response.ok) {
             didEditorChange = false;
             window.location.href = `/`;

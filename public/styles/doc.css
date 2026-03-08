@@ -76,7 +76,8 @@ body {
     font-size: 28px;
     font-weight: 700;
     color: #1a1a1a;
-    width: 45%;
+    width: 50%;
+    text-wrap: nowrap;
 }
 .document-header #titleInput {
     border: 1px solid #000;

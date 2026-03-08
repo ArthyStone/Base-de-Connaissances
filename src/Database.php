@@ -94,13 +94,13 @@ class Database {
                 $stmt->bindParam(':tag_id', $tagId, PDO::PARAM_INT);
                 $stmt->execute();
             }
-            return true;
             $db->commit();
         } catch (\PDOException $e) {
             $db->rollBack();
             throw $e;
             return false;
         }
+        return true;
     }
     public static function createDocument($user_id, $text, $title, $tags) {
         $db = self::getConnection();

@@ -10,7 +10,7 @@ class Session {
             session_set_cookie_params([
                 'lifetime' => 0,
                 'path' => '/',
-                'secure' => true,
+//                'secure' => true, // n'hésitez pas à remettre ce paramètre si vous hébergez votre site en https (ou en localhost, c'est toléré)
                 'httponly' => true,
                 'samesite' => 'strict'
             ]);
