@@ -22,6 +22,7 @@ class Database {
         return self::getConnection()->prepare($sql);
     }
     private static function normalizeDate($date) {
+        date_default_timezone_set('Europe/Paris');
         return date('d/m/Y H:i', strtotime($date));
     }
     
