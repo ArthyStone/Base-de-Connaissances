@@ -1,6 +1,16 @@
 # Base de Connaissances
 
 
+**Pour utiliser cette base de connaissances, il faudra suivre toutes les étapes de ce README.**
+---
+Commencez par cloner le repo quelque part où vous voulez l'héberger
+```
+git clone git@github.com:ArthyStone/Base-de-Connaissances.git
+```
+Et vu que le projet utilise vendor, il vous faudra effectuer cette commande
+```
+composer install
+```
 Il est important que vous créiez un config.json à la racine de la base de connaissances (à côté des .gitignore, composer.json/.lock et dossiers vendor, src, public puis views)
 votre config.json devra ressembler à ça:
 ```JSON
@@ -15,8 +25,8 @@ votre config.json devra ressembler à ça:
 ```
 Si vous avez créé une base de données POSTGRESQL, utilisez les commandes suivantes pour créer les tables avec les clés nécessaires, vous pourrez utiliser la bdc sans plus ample modification.
 Au contraire si vous utilisez un autre type de bdd, vous devrez créer les tables vous-même et modifier toutes les requêtes dans `src\Database.php`, pour les adapter à ce que vous utilisez.
-remplacez bien pgsql par ce que vous utilisez, ligne 13 et ensuite il restera 13 autres champs à adapter.
-
+Remplacez bien pgsql par ce que vous utilisez, ligne 13 et ensuite il restera 13 autres champs à adapter.
+Si vous vivez dans un fuseau horaire autre que celui de l'Europe, modifiez aussi la ligne 25 pour mettre votre propre fuseau !
 
 - Tables :
 ```SQL
@@ -66,5 +76,3 @@ CREATE TABLE kb.tag_links (
         NOT VALID
 );
 ```
-
-
